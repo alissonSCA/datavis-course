@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Cinema</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+<div id="chart1"></div>
+<div id="chart2"></div>
+<div id="chart3"></div>
+<div id="chart4"></div>
+<script type="text/javascript">
+
+    d3.select("#chart1").append("h1").text("Maiores bilheterias");
+    function render(data, comparator) {
+        d3.select("#chart1").selectAll("div.h-bar")
+                .data(data)
+            .enter().append("div")
+            .attr("class", "h-bar")
+            .append("span");
+        
+        d3.select("#chart1").selectAll("div.h-bar")
+                .data(data)
+            .attr("class", "h-bar")
+            .style("width", function (d) {
+                return (d.Worldwide_Gross_M*0.4) + "px";
+            })
+            .select("span")
+                .text(function (d) {
+                    return d.Film+" ("+d.Worldwide_Gross_M+")";
+                });
+         if(comparator)
+            d3.select("#chart1")
+                .selectAll("div.h-bar") 
+                .sort(comparator);
+    }
+
+    d3.select("#chart2").append("h1").text("Maiores orçamentos");
+    function render2(data, comparator) {
+        d3.select("#chart2").selectAll("div.h-bar")
+                .data(data)
+            .enter().append("div")
+            .attr("class", "h-bar")
+            .append("span");
+
+        d3.select("#chart2").selectAll("div.h-bar")
+                .data(data)
+            .attr("class", "h-bar")
+            .style("width", function (d) {
+                return (d.Budget_M) + "px";
+            })
+            .style("background-color","red")
+            .select("span")
+                .text(function (d) {
+                    return d.Film+" ("+d.Budget_M+")";
+                });
+         if(comparator)
+            d3.select("#chart2")
+                .selectAll("div.h-bar")
+                .sort(comparator);
+    }
+
+    d3.select("#chart3").append("h1").text("Maiores lucros");
+    function render3(data, comparator) {
+        d3.select("#chart3").selectAll("div.h-bar")
+                .data(data)
+            .enter().append("div")
+            .attr("class", "h-bar")
+            .append("span");
+
+        d3.select("#chart3").selectAll("div.h-bar")
+                .data(data)
+            .attr("class", "h-bar")
+            .style("width", function (d) {
+                return 0.5*(d.Worldwide_Gross_M - d.Budget_M) + "px";
+            })
+            .style("background-color","green")
+            .select("span")
+                .text(function (d) {
+                    return d.Film+" ("+(d.Worldwide_Gross_M - d.Budget_M)+")";
+                });
+         if(comparator)
+            d3.select("#chart3")
+                .selectAll("div.h-bar")
+                .sort(comparator);
+    }
+
+
+///////QUESTÃO BONUS/////////////
+    d3.select("#chart4").append("h1").text("Maiores lucros \ gênero - Bonus");
+
+    let sumData = new Map();
+    let newData = [];
+
+
+    function sumarizaDados(data, comparator){
+
+
+        d3.select("#chart4").selectAll("div.h-bar")
+                .data(data)
+            .enter()
+            .each(function(d){
+                let acumulado = (sumData.get(d.Genre) > 0)? sumData.get(d.Genre) : 0;
+                sumData.set(d.Genre, acumulado + d.Worldwide_Gross_M - d.Budget_M);
+            });
+
+
+        let i = 0;
+        for(let k of sumData.keys()){
+            newData[i] = {genero:k, lucro:sumData.get(k)};
+            i = i + 1;
+        }
+
+
+        d3.select("#chart4").selectAll("div.h-bar")
+                .data(newData)
+            .enter().append("div")
+            .attr("class", "h-bar")
+            .append("span");
+
+        d3.select("#chart4").selectAll("div.h-bar")
+                .data(newData)
+            .attr("class", "h-bar")
+            .style("width", function (d) {
+                return (d.lucro*0.12) + "px";
+            })
+            .style("background-color","black")
+            .select("span")
+                .text(function (d) {
+                    return d.genero+" ("+d.lucro+")";
+                });
+         if(comparator)
+            d3.select("#chart4")
+                .selectAll("div.h-bar")
+                .sort(comparator);
+
+
+
+    }
+/////////////////////////////////
+
+    let comparePorBilheteria = function (a, b) {
+        return b.Worldwide_Gross_M - a.Worldwide_Gross_M;
+    };
+    let comparePorOrcamento = function (a, b) {
+        return b.Budget_M - a.Budget_M;
+    };
+    let comparePorLucro = function (a, b) {
+        return (b.Worldwide_Gross_M - b.Budget_M) - (a.Worldwide_Gross_M - a.Budget_M);
+    };
+    let comparePorLucroAgrupado = function (a, b) {
+        return b.lucro - a.lucro;
+    };
+
+    
+    d3.json("data/movies.json").then(function(json){
+        render(json, comparePorBilheteria);
+        render2(json, comparePorOrcamento);
+        render3(json, comparePorLucro);
+        sumarizaDados(json, comparePorLucroAgrupado);
+    });
+</script>
+</body>
+</html>
