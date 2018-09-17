@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scatterplot</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+<div id="chart"></div>
+<div id="respostas">
+	<h1>Correlação</h1>
+	<p>Parece haver uma pequena correlaçao entre as variáveis</p>
+	<h1>Outliers</h1>
+	<p>Claramente o filme Avatar é um outlier. Ele possui uma bilheteria absurdamente maior que todos os outros, e um orçamento compativel com os demais.</p>
+	<p>Fora isso, o filme Harry Potter e as reliquias da morte parte 2 também destoa um pouco dos demais, embora essa percepção esteja comprometida pela presença de Avatar.</p>
+</div>
+<script type="text/javascript">
+		function plotFilmes(dataset){
+				// Primeiro definimos o objeto margin
+				let margin = {top: 40, right: 40, bottom: 40, left: 40};
+				
+				// Depois definimos w e h como as dimensões internas
+				// da área do gráfico (área útil)
+				let w = 800 - margin.left - margin.right;
+				let h = 200 - margin.top - margin.bottom;
+
+				// Depois um elemento g no svg que vai transladar a origem 
+				// do gráfico como sendo a origem da área útil do gráfico
+
+				let svg = d3.select("#chart")
+				        .append("svg")
+				            .attr("width", w + margin.left + margin.right)
+				            .attr("height", h + margin.top + margin.bottom)
+				        .append("g")
+				            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				// Agora todo o código pode ignorar as margens. 
+				// Copie aqui o código de criação das escalas do arquivo
+				// anterior (vai continuar o mesmo)
+
+				// Depois adicione os elementos círculos
+
+				// Depois adicione os labels
+
+				// Crie a scala
+				let xScale = d3.scaleLinear()
+												.domain([d3.min(dataset, d=> d.Worldwide_Gross_M), d3.max(dataset, d=> d.Worldwide_Gross_M)])
+												.range([0,w]);
+				let xAxis = d3.axisBottom(xScale);
+				let yScale = d3.scaleLinear()
+												.domain([d3.min(dataset, d=> d.Budget_M), d3.max(dataset, d=> d.Budget_M)])
+												.range([h,0]);
+				let yAxis = d3.axisLeft(yScale).ticks(5);
+				// Depois adicione os elementos círculos
+				svg.selectAll("circle")
+						.data(dataset)
+						.enter()
+						.append("circle")
+						.attr("cx", d => xScale(d.Worldwide_Gross_M))
+						.attr("cy", d => yScale(d.Budget_M))
+						.attr("r", 5);
+				// Depois adicione os labels
+				svg.selectAll("text")
+						.data(dataset)
+						.enter()
+						.append("text")
+						.attr("x", d => xScale(d.Worldwide_Gross_M))
+						.attr("y", d => yScale(d.Budget_M))
+						.attr("font-family", "sans-serif")
+						.attr("font-size", "11px")
+						.attr("fill", "red")
+						.text(d => d.Film);			
+
+				svg.append("g")
+						.attr("transform", "translate(0," + h +")")
+						.call(xAxis);
+				svg.append("g")
+						.call(yAxis);
+				// Título eixo horizontal
+				svg.append("text")
+						.attr("transform", "translate(" + (w/2) + "," + (h + margin.bottom) + ")")
+						.style("text-anchor", "middle")
+						.attr("font-family", "sans-serif")
+						.attr("font-size", "12px")
+						.text("Worldwide_Gross_M");
+				// Título eixo vertical
+				svg.append("text")
+						.attr("transform", "rotate(-90)")
+						.attr("y", 0 - margin.left)
+						.attr("x",0 - (h / 2))
+						.attr("dy", "1em")
+						.style("text-anchor", "middle")
+						.attr("font-family", "sans-serif")
+						.attr("font-size", "12px")
+						.text("Budget_M");
+		}
+    d3.json("data/movies.json").then(function(json){
+        plotFilmes(json);
+    });
+        
+</script>
+</body>
+</html>
