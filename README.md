@@ -15,7 +15,7 @@
 
 [movies_d3.html](d3_intro/movies_d3.html)<br>
 
-## Aula do dia 03/09/2018
+## Aula do dia 12/09/2018
 
 [movies_scatter.html](d3_scale/movies_scatter.html)<br>
 
